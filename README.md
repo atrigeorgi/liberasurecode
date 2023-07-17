@@ -1,7 +1,7 @@
 liberasurecode
 ==============
 
-I tried to run the liberasurecode on Apple M2 but I had two errors:
+I tried to run the liberasurecode (https://github.com/atrigeorgi/liberasurecode) on Apple M2 but I had two errors:
 * a function declaration without a prototype is deprecated in all versions of C [-Werror,-Wstrict-prototypes]
 * function pointer incompatible pointer types void (*)(void *) from void (my_type *)
 
