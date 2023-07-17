@@ -6,8 +6,7 @@ I tried to run the liberasurecode on Apple M2 but I had two errors:
 * function pointer incompatible pointer types void (*)(void *) from void (my_type *)
 
 Solutions:
-* put void as parameters with functions that do not have parameters.
-* remove /test folder
+* all the differences from the original code exists in liberasurecode.patch
 ----
 
 
