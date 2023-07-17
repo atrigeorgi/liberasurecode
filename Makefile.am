@@ -1,5 +1,5 @@
 # Top-level liberasurecode automake configuration
-SUBDIRS = src test doc
+SUBDIRS = src doc
 
 EXTRA_DIST = autogen.sh get_flags_from_cpuid.c
 

@@ -24,22 +24,41 @@
  * vi: set noai tw=79 ts=4 sw=4:
  */
 
-// DISCLAIMER: This is a totally basic implementation of RS used if a user does not
-// want to install one of the supported backends, such as Jerasure and ISA-L.
-// This is not expected to perform as well as the other supported backends,
-// but does not make any assumptions about the host system.  Using a library
-// like Jerasure with GF-Complete will give users the ability to tune to their
-// architecture (Intel or ARM), CPU and memory (lots of options).
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <rs_galois.h>
 
-// We are only implementing w=16 here.  If you want to use something
-// else, then use Jerasure with GF-Complete or ISA-L.
-#define PRIM_POLY 0x1100b
-#define FIELD_SIZE (1 << 16)
-#define GROUP_SIZE (FIELD_SIZE - 1)
+int test_inverse()
+{
+  int *uniq = (int*)malloc(sizeof(int)*FIELD_SIZE);
+  int i = 0;
 
-void rs_galois_init_tables(void);
-void rs_galois_deinit_tables(void);
-int rs_galois_mult(int x, int y);
-int rs_galois_div(int x, int y);
-int rs_galois_inverse(int x);
+  memset(uniq, 0, sizeof(int)*FIELD_SIZE);
 
+  rs_galois_init_tables();
+
+  for (i = 1; i < FIELD_SIZE; i++) {
+    if (uniq[i] != 0) {
+      fprintf(stderr, "Duplicate %d: %d , %d \n", i, uniq[i], rs_galois_inverse(i));
+      return 1;
+    }
+    uniq[i] = rs_galois_inverse(i); 
+    int one = rs_galois_mult(rs_galois_inverse(i), i);
+    if (one != 1) {
+      fprintf(stderr, "%d is not the inverse of %d = %d\n", rs_galois_inverse(i), i, one);
+      return 1;
+    }
+  }
+  return 0;
+}
+
+int main(int argc, char **argv)
+{
+  int ret = 0;
+  if (test_inverse() != 0) {
+    fprintf(stderr, "test_inverse() failed\n");
+    ret = 1;
+  }
+  return ret;
+}

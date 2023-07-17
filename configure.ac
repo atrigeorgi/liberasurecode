@@ -268,7 +268,6 @@ AC_CONFIG_FILES([\
     src/builtin/xor_codes/Makefile \
     src/builtin/rs_vand/Makefile \
     src/Makefile \
-    test/Makefile \
     doc/Makefile \
     Makefile \
     erasurecode.pc \

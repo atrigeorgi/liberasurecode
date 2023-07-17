@@ -1,0 +1,138 @@
+diff --git a/Makefile.am b/Makefile.am
+index 6135f2a..708223b 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,5 +1,5 @@
+ # Top-level liberasurecode automake configuration
+-SUBDIRS = src test doc
++SUBDIRS = src doc
+ 
+ EXTRA_DIST = autogen.sh get_flags_from_cpuid.c
+ 
+diff --git a/configure.ac b/configure.ac
+index 16d4dc4..b40caf1 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -268,7 +268,6 @@ AC_CONFIG_FILES([\
+     src/builtin/xor_codes/Makefile \
+     src/builtin/rs_vand/Makefile \
+     src/Makefile \
+-    test/Makefile \
+     doc/Makefile \
+     Makefile \
+     erasurecode.pc \
+diff --git a/include/erasurecode/erasurecode.h b/include/erasurecode/erasurecode.h
+index 0a5f98e..b801206 100644
+--- a/include/erasurecode/erasurecode.h
++++ b/include/erasurecode/erasurecode.h
+@@ -383,7 +383,7 @@ int liberasurecode_get_fragment_size(int desc, int data_len);
+  * @return version uint32_t - from erasurecode_version.h
+  */
+ 
+-uint32_t liberasurecode_get_version();
++uint32_t liberasurecode_get_version(void);
+ 
+ /* ==~=*=~===~=*=~==~=*=~== liberasurecode Error codes =~=*=~==~=~=*=~==~== */
+ 
+diff --git a/include/rs_vand/liberasurecode_rs_vand.h b/include/rs_vand/liberasurecode_rs_vand.h
+index 97c0cc8..ba31d49 100644
+--- a/include/rs_vand/liberasurecode_rs_vand.h
++++ b/include/rs_vand/liberasurecode_rs_vand.h
+@@ -34,7 +34,7 @@ int rs_galois_div(int x, int y);
+ int rs_galois_inverse(int x);
+ int rs_galois_mult(int x, int y);
+ void init_liberasurecode_rs_vand(int k, int m);
+-void deinit_liberasurecode_rs_vand();
++void deinit_liberasurecode_rs_vand(void);
+ void print_matrix(int *matrix, int rows, int cols);
+ void square_matrix_multiply(int *m1, int *m2, int *prod, int n);
+ int create_decoding_matrix(int *gen_matrix, int *dec_matrix, int *missing_idxs, int k, int m);
+diff --git a/include/rs_vand/rs_galois.h b/include/rs_vand/rs_galois.h
+index f17bbd3..88b5a70 100644
+--- a/include/rs_vand/rs_galois.h
++++ b/include/rs_vand/rs_galois.h
+@@ -37,8 +37,8 @@
+ #define FIELD_SIZE (1 << 16)
+ #define GROUP_SIZE (FIELD_SIZE - 1)
+ 
+-void rs_galois_init_tables();
+-void rs_galois_deinit_tables();
++void rs_galois_init_tables(void);
++void rs_galois_deinit_tables(void);
+ int rs_galois_mult(int x, int y);
+ int rs_galois_div(int x, int y);
+ int rs_galois_inverse(int x);
+diff --git a/src/backends/rs_vand/liberasurecode_rs_vand.c b/src/backends/rs_vand/liberasurecode_rs_vand.c
+index c17dde1..cf8049a 100644
+--- a/src/backends/rs_vand/liberasurecode_rs_vand.c
++++ b/src/backends/rs_vand/liberasurecode_rs_vand.c
+@@ -52,7 +52,7 @@ typedef int (*liberasurecode_rs_vand_encode_func)(int *, char **, char **, int,
+ typedef int (*liberasurecode_rs_vand_decode_func)(int *, char **, char **, int, int, int *, int, int);
+ typedef int (*liberasurecode_rs_vand_reconstruct_func)(int *, char **, char **, int, int, int *, int, int);
+ typedef void (*init_liberasurecode_rs_vand_func)(int, int);
+-typedef void (*deinit_liberasurecode_rs_vand_func)();
++typedef void (*deinit_liberasurecode_rs_vand_func)(void);
+ typedef void (*free_systematic_matrix_func)(int *);
+ typedef int* (*make_systematic_matrix_func)(int, int);
+ 
+diff --git a/src/builtin/rs_vand/liberasurecode_rs_vand.c b/src/builtin/rs_vand/liberasurecode_rs_vand.c
+index 94b1620..6f8c9cf 100644
+--- a/src/builtin/rs_vand/liberasurecode_rs_vand.c
++++ b/src/builtin/rs_vand/liberasurecode_rs_vand.c
+@@ -137,7 +137,7 @@ void init_liberasurecode_rs_vand(int k, int m)
+   rs_galois_init_tables();
+ }
+ 
+-void deinit_liberasurecode_rs_vand()
++void deinit_liberasurecode_rs_vand(void)
+ {
+   rs_galois_deinit_tables();
+ }
+diff --git a/src/builtin/rs_vand/rs_galois.c b/src/builtin/rs_vand/rs_galois.c
+index c709116..c29fa26 100644
+--- a/src/builtin/rs_vand/rs_galois.c
++++ b/src/builtin/rs_vand/rs_galois.c
+@@ -45,7 +45,7 @@ int *log_table = NULL;
+ int *ilog_table = NULL;
+ int *ilog_table_begin = NULL;
+ 
+-void rs_galois_init_tables()
++void rs_galois_init_tables(void)
+ {
+   log_table = (int*)malloc(sizeof(int)*FIELD_SIZE);
+   ilog_table_begin = (int*)malloc(sizeof(int)*FIELD_SIZE*3);
+@@ -65,7 +65,7 @@ void rs_galois_init_tables()
+   ilog_table = &ilog_table_begin[GROUP_SIZE];
+ }
+ 
+-void rs_galois_deinit_tables()
++void rs_galois_deinit_tables(void)
+ {
+   free(log_table);
+   free(ilog_table_begin);
+diff --git a/src/erasurecode.c b/src/erasurecode.c
+index f1f6270..31e73af 100644
+--- a/src/erasurecode.c
++++ b/src/erasurecode.c
+@@ -1304,7 +1304,7 @@ int liberasurecode_get_fragment_size(int desc, int data_len)
+  * This will return the liberasurecode version for the descriptor
+  */
+ 
+-uint32_t liberasurecode_get_version()
++uint32_t liberasurecode_get_version(void)
+ {
+     return LIBERASURECODE_VERSION;
+ }
+diff --git a/src/utils/chksum/alg_sig.c b/src/utils/chksum/alg_sig.c
+index 86740e6..a125416 100644
+--- a/src/utils/chksum/alg_sig.c
++++ b/src/utils/chksum/alg_sig.c
+@@ -64,7 +64,7 @@ galois_uninit_field_func get_galois_uninit_func(void *handle) {
+ }
+ 
+ 
+-void *get_jerasure_sohandle()
++void *get_jerasure_sohandle(void)
+ {
+     return dlopen(JERASURE_SONAME, RTLD_LAZY | RTLD_LOCAL);
+ }
