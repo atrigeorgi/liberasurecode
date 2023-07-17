@@ -1,4 +1,4 @@
-liberasurecode
+Install liberasurecode on Mac
 ==============
 
 I tried to run the liberasurecode (https://github.com/atrigeorgi/liberasurecode) on Apple M2 but I had two errors:
